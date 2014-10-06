@@ -10,12 +10,12 @@ using namespace std;
 
 int main()
 {
-    SortingCompetition sorter("input2.txt");
+    SortingCompetition sorter("input.txt");
     //store data from input file
     sorter.readData();
     //prepare copy of data to be sorted
     sorter.prepareData();
-    //algorithmTester();
+
     //declare 2 time points
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
