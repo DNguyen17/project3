@@ -35,7 +35,7 @@ void SortingCompetition::setFileName(const string& inputFileName){
 
     fin.close();
     fin.open(inputFileName.c_str(), ios::in);
-    if (!fin.good()){
+    if (!fin){
         cerr << "file could not be opened" << endl;
     }
 }
@@ -81,12 +81,6 @@ int SortingCompetition::getWordCount(void){
 bool SortingCompetition::readData(){
 
     bool x = false;
-    //clear contents of words2 to prevent overlap later
-    for(int i = 0; i < getWordCount(); i++){
-        delete[] words2[i];
-    }
-    delete[] words2;
-
 
     //clear all existing words in the vector
     for (size_t i = 0; i < words.size(); i++){
@@ -99,10 +93,11 @@ bool SortingCompetition::readData(){
     string buffer;
     while(!fin.eof()){
         fin >> buffer;
+        //cout<<buffer<<endl;
         words.push_back(new char[buffer.length()+1]);
         strcpy(words.at(words.size()-1),buffer.c_str());
     }
-    setWordCount(words.size());
+
 
     fin.close();
 
@@ -115,13 +110,27 @@ bool SortingCompetition::readData(){
 bool SortingCompetition::prepareData(){
 
     bool x = false;
+    //clear contents of words2 to prevent overlap later
+    for(int i = 0; i < getWordCount(); i++){
+        delete[] words2[i];
+    }
+    if (getWordCount() > 0)
+        delete[] words2;
+
+    setWordCount(words.size());
 
     // Loop first finds the length of the word, and then
     //creates length prefixed strings
 
-    words2 = new char*[words.size()];
+    try{
+    words2 = new char*[getWordCount()];
+    }
+    catch(std::bad_alloc&)
+    {
+        cout<<"BAD ALLOC"<<endl;
+    }
 
-    for(size_t i = 0; i < words.size(); i++){
+    for(int i = 0; i < getWordCount(); i++){
         //determine length of string and store as ASCII character
         char length = strlen(words.at(i));
 
@@ -145,8 +154,8 @@ bool SortingCompetition::prepareData(){
 //sort the data by length, then alphabetized
 void SortingCompetition::sortData(){
 
-    //quicksort(words2, 0, getWordCount()-1);
-    mergeSort(0,getWordCount()-1);
+    quicksort(words2, 0, getWordCount()-1);
+    //mergeSort(0,getWordCount()-1);
 }
 
 void SortingCompetition::outputData(const string& outputFileName){
@@ -157,7 +166,7 @@ void SortingCompetition::outputData(const string& outputFileName){
         cerr << "file could not be opened" << endl;
     }
 
-    for(int i = 0; i < wordCount; i++){
+    for(int i = 0; i < getWordCount(); i++){
         fout << &(words2[i][1])<<endl;
     }
     fout.close();
@@ -186,9 +195,9 @@ int SortingCompetition::compareWords(char* str1, char* str2){
 //Quicksort help from http://www.algolist.net/Algorithms/Sorting/Quicksort
 void SortingCompetition::quicksort(char**& wordArr, int start, int end){
 
-    int med = (start+end)/2;
-    char* pivot = new char[wordArr[med][0]+1];
-    strcpy(pivot,wordArr[med]);
+    int pivot = (start+end)/2;
+    //char* pivot = new char[wordArr[med][0]+1];
+    //strcpy(pivot,wordArr[med]);
     int i = start;
     int j = end;
     char* temp;
@@ -196,11 +205,11 @@ void SortingCompetition::quicksort(char**& wordArr, int start, int end){
     //move values greater than pivot to right
     //& less than pivot to left
     while(i <= j){
-        while(compareWords(wordArr[i],pivot) <= -1){
+        while(compareWords(wordArr[i],wordArr[pivot]) <= -1){
             i++;
         }
 
-        while(compareWords(wordArr[j],pivot) >= 1){
+        while(compareWords(wordArr[j],wordArr[pivot]) >= 1){
             j--;
         }
 
@@ -208,6 +217,13 @@ void SortingCompetition::quicksort(char**& wordArr, int start, int end){
             temp = wordArr[i];
             wordArr[i] = wordArr[j];
             wordArr[j] = temp;
+
+            if(i == pivot){ //if pivot was swapped with j
+                pivot = j;
+            }
+            else if (j == pivot){ //if pivot was swapped with i
+                pivot = i;
+            }
             i++;
             j--;
         }
@@ -218,10 +234,10 @@ void SortingCompetition::quicksort(char**& wordArr, int start, int end){
     if(start < j){
         quicksort(wordArr, start, j);
     }
-
     if(i < end){
         quicksort(wordArr, i, end);
     }
+
 }
 
 void SortingCompetition::bubbleSort(){
