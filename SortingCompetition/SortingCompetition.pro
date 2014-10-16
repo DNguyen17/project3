@@ -9,4 +9,6 @@ SOURCES += main.cpp \
 HEADERS += \
     SortingCompetition.h
 
-QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -std=c++11 \
+                  -fopenmp
+QMAKE_LFLAGS +=  -fopenmp

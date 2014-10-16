@@ -10,7 +10,8 @@ using namespace std;
 
 int main()
 {
-    SortingCompetition sorter("input.txt");
+    srand(time(0));
+    SortingCompetition sorter("input2.txt");
     //store data from input file
     sorter.readData();
     //prepare copy of data to be sorted
@@ -31,9 +32,9 @@ int main()
     //get No. of seconds elapsed & output duration
     //need to do this multiple times & get average
     std::chrono::duration<double> elapsed_seconds = end-start;
-    std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+    //std::time_t end_time = std::chrono::system_clock::to_time_t(end);
 
-    cout << "finished computation at " << std::ctime(&end_time)
+    cout //<< "finished computation at " << std::ctime(&end_time)
          << "elapsed time: " << elapsed_seconds.count() << "s" << endl;
 
     //output sorted data to output file

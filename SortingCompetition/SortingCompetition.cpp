@@ -154,8 +154,12 @@ bool SortingCompetition::prepareData(){
 //sort the data by length, then alphabetized
 void SortingCompetition::sortData(){
 
-    quicksort(words2, 0, getWordCount()-1);
-    //mergeSort(0,getWordCount()-1);
+
+    //quicksort2WithInsert(0, getWordCount()-1, 60);
+    multisort(0, getWordCount()-1, 50);
+    //quicksort2(0,getWordCount()-1);
+
+
 }
 
 void SortingCompetition::outputData(const string& outputFileName){
@@ -195,9 +199,7 @@ int SortingCompetition::compareWords(char* str1, char* str2){
 //Quicksort help from http://www.algolist.net/Algorithms/Sorting/Quicksort
 void SortingCompetition::quicksort(char**& wordArr, int start, int end){
 
-    int pivot = (start+end)/2;
-    //char* pivot = new char[wordArr[med][0]+1];
-    //strcpy(pivot,wordArr[med]);
+    int pivot = rand()%(end-start)+start;
     int i = start;
     int j = end;
     char* temp;
@@ -236,6 +238,53 @@ void SortingCompetition::quicksort(char**& wordArr, int start, int end){
     }
     if(i < end){
         quicksort(wordArr, i, end);
+    }
+
+}
+
+void SortingCompetition::quicksort2(int start, int end){ //with multithreading
+
+    int pivot = rand()%(end-start)+start;
+    //move values greater than pivot to right
+    //& less than pivot to left
+    int i = start;
+    int j = end;
+    char* temp;
+
+    //move values greater than pivot to right
+    //& less than pivot to left
+    while(i <= j){
+        while(compareWords(words2[i],words2[pivot]) <= -1){
+            i++;
+        }
+
+        while(compareWords(words2[j],words2[pivot]) >= 1){
+            j--;
+        }
+
+        if (i <= j){
+            temp = words2[i];
+            words2[i] = words2[j];
+            words2[j] = temp;
+
+            if(i == pivot){ //if pivot was swapped with j
+                pivot = j;
+            }
+            else if (j == pivot){ //if pivot was swapped with i
+                pivot = i;
+            }
+            i++;
+            j--;
+        }
+
+    }
+
+    if(start < j){
+        quicksort2(start, j);
+    }
+
+    if(i < end){
+        quicksort2(i, end);
     }
 
 }
@@ -317,4 +366,146 @@ void SortingCompetition::mergeSort(int left, int right){
 
         merge(left,middle,right);
     }
+}
+
+//Quicksort help from http://www.algolist.net/Algorithms/Sorting/Quicksort
+void SortingCompetition::quicksort2WithInsert(int start, int end, int passOff){
+
+    int pivot = (start+end)/2;
+    //char* pivot = new char[wordArr[med][0]+1];
+    //strcpy(pivot,wordArr[med]);
+    int i = start;
+    int j = end;
+    char* temp;
+
+    //move values greater than pivot to right
+    //& less than pivot to left
+    while(i <= j){
+        while(compareWords(words2[i],words2[pivot]) <= -1){
+            i++;
+        }
+
+        while(compareWords(words2[j],words2[pivot]) >= 1){
+            j--;
+        }
+
+        if (i <= j){
+            temp = words2[i];
+            words2[i] = words2[j];
+            words2[j] = temp;
+
+            if(i == pivot){ //if pivot was swapped with j
+                pivot = j;
+            }
+            else if (j == pivot){ //if pivot was swapped with i
+                pivot = i;
+            }
+            i++;
+            j--;
+        }
+
+    }
+
+    //recursive call for left of pivot & right of pivot
+    //or switch to insertion sort
+    if(start < j){
+        if((j-start+1)>passOff ){
+            quicksort2(start, j);
+        }
+        else{
+            insertion_sort(start,j);
+        }
+    }
+    if(i < end){
+        if((end-i+1)>passOff){
+            quicksort2(i, end);
+        }
+        else{
+            insertion_sort(i,end);
+        }
+    }
+}
+
+//http://mycodinglab.com/insertion-sort-algorithm/
+void SortingCompetition::insertion_sort(int start,int end){
+     int i, j;
+     char* temp;
+     int length = end - start + 1;
+
+     for (i = start + 1; i < start + length; i++) {
+         j = i;
+         while (j > start && (compareWords(words2[j-1],words2[j])>= 1)){
+             temp = words2[j];
+             words2[j] = words2[j - 1];
+             words2[j - 1] = temp;
+             j--;
+         }//end of while loop
+
+    }
+
+}
+
+void SortingCompetition::multisort(int start, int end, int passOff){
+
+    int pivot = rand()%(end-start)+start;
+    int i = start;
+    int j = end;
+    char* temp;
+
+    //move values greater than pivot to right
+    //& less than pivot to left
+    while(i <= j){
+        while(compareWords(words2[i],words2[pivot]) <= -1){
+            i++;
+        }
+
+        while(compareWords(words2[j],words2[pivot]) >= 1){
+            j--;
+        }
+
+        if (i <= j){
+            temp = words2[i];
+            words2[i] = words2[j];
+            words2[j] = temp;
+
+            if(i == pivot){ //if pivot was swapped with j
+                pivot = j;
+            }
+            else if (j == pivot){ //if pivot was swapped with i
+                pivot = i;
+            }
+            i++;
+            j--;
+        }
+
+    }
+
+    //recursive call for left of pivot & right of pivot
+    //or switch to insertion sort
+    if (((j-start+1) > passOff) || ((end-i+1) > passOff))
+    {
+        if (start < j){
+            quicksort2(start, j);
+        }
+
+        if (i < end){
+            quicksort2(i, end);
+        }
+    }
+
+    else
+    {
+        #pragma omp parallel num_threads(2)
+        {
+            int thread = omp_get_thread_num();
+            if(thread == 0){
+                insertion_sort(start, j);
+            }
+
+            else{
+                insertion_sort(i,end);
+            }
+        }
+    }
+
 }

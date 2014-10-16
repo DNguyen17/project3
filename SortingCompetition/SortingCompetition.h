@@ -6,6 +6,7 @@
 #include <fstream>
 #include <vector>
 #include <cstring>
+#include <omp.h>
 using namespace std;
 
 class SortingCompetition
@@ -35,6 +36,10 @@ private:
     //sorting functions
     void bubbleSort(void);
     void quicksort(char**& wordArr, int start, int end);
+    void quicksort2(int start, int end);
+    void quicksort2WithInsert(int start, int end, int passOff);
+    void insertion_sort(int start,int end);
+    void multisort(int start, int end, int passOff);
     void merge(int low, int middle, int high);
     void mergeSort(int left, int right);
 
